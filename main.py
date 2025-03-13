@@ -145,8 +145,8 @@ def main():
     if not os.path.exists(build_dir):
         os.makedirs(build_dir)
     
-    username = "kus.meal"
-    password = "kus2025!"
+    username = "instagram_username"
+    password = "instagram_password"
     
     student_menu = crawl_student_menu()
     backgrounds_student = {

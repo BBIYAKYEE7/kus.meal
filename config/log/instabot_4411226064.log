@@ -1,0 +1,24 @@
+2025-03-14 00:50:13,444 - instabot version: 0.117.0 (bot) - INFO - Instabot version: 0.117.0 Started
+2025-03-14 00:50:13,445 - instabot version: 0.117.0 (bot) - DEBUG - Bot imported from /Users/jaeyoonkim/Library/Python/3.12/lib/python/site-packages/instabot/bot/bot.py
+2025-03-14 00:50:13,446 - instabot version: 0.117.0 (api_login) - INFO - Not yet logged in starting: PRE-LOGIN FLOW!
+2025-03-14 00:50:13,676 - instabot version: 0.117.0 (api) - DEBUG - POST to endpoint: accounts/get_prefill_candidates/ returned response: <Response [200]>
+2025-03-14 00:50:13,985 - instabot version: 0.117.0 (api) - DEBUG - POST to endpoint: qe/sync/ returned response: <Response [200]>
+2025-03-14 00:50:14,246 - instabot version: 0.117.0 (api) - DEBUG - POST to endpoint: launcher/sync/ returned response: <Response [200]>
+2025-03-14 00:50:14,497 - instabot version: 0.117.0 (api) - DEBUG - POST to endpoint: accounts/contact_point_prefill/ returned response: <Response [200]>
+2025-03-14 00:50:15,433 - instabot version: 0.117.0 (api) - DEBUG - POST to endpoint: accounts/login/ returned response: <Response [400]>
+2025-03-14 00:50:15,433 - instabot version: 0.117.0 (api) - DEBUG - Responsecode indicates error; response content: b'{"message":"We can send you an email to help you get back into your account.","status":"fail","error_title":"Forgotten password for kus.meal","buttons":[{"title":"Send email","action":"send_one_click_login_email"},{"title":"Try Again","action":"dismiss"}],"is_cp_nonce_flow":false,"login_identifer_type":"username","login_user_input":"kus.meal","qe_device_id":"f97712b3-de08-490a-b93d-d0ba606b2e16","login_attempt_count":1,"login_source":"unknown","error_code":4,"invalid_credentials":true,"exception_name":"UserInvalidCredentials","error_type":"bad_password"}'
+2025-03-14 00:50:15,434 - instabot version: 0.117.0 (api) - ERROR - Request returns 400 error!
+2025-03-14 00:50:15,434 - instabot version: 0.117.0 (api) - INFO - Instagram's error message: We can send you an email to help you get back into your account.
+2025-03-14 00:50:15,434 - instabot version: 0.117.0 (api) - INFO - Error type: bad_password
+2025-03-14 00:50:15,435 - instabot version: 0.117.0 (api) - ERROR - Failed to login go to instagram and change your password
+2025-03-14 00:50:15,435 - instabot version: 0.117.0 (api) - INFO - Username or password is incorrect.
+2025-03-14 00:50:15,504 - instabot version: 0.117.0 (bot_checkpoint) - DEBUG - Saving Checkpoint file to: /Users/jaeyoonkim/Desktop/kus.meal/config/kus.meal.checkpoint
+2025-03-14 00:50:15,506 - instabot version: 0.117.0 (bot) - INFO - Total requests: 33
+2025-03-14 00:50:15,506 - instabot version: 0.117.0 (bot_checkpoint) - DEBUG - Saving Checkpoint file to: /Users/jaeyoonkim/Desktop/kus.meal/config/kus.meal.checkpoint
+2025-03-14 00:50:15,507 - instabot version: 0.117.0 (bot) - INFO - Total requests: 33
+2025-03-14 00:50:15,507 - instabot version: 0.117.0 (bot_checkpoint) - DEBUG - Saving Checkpoint file to: /Users/jaeyoonkim/Desktop/kus.meal/config/kus.meal.checkpoint
+2025-03-14 00:50:15,507 - instabot version: 0.117.0 (bot) - INFO - Total requests: 33
+2025-03-14 00:50:15,507 - instabot version: 0.117.0 (bot_checkpoint) - DEBUG - Saving Checkpoint file to: /Users/jaeyoonkim/Desktop/kus.meal/config/kus.meal.checkpoint
+2025-03-14 00:50:15,508 - instabot version: 0.117.0 (bot) - INFO - Total requests: 33
+2025-03-14 00:50:15,508 - instabot version: 0.117.0 (bot_checkpoint) - DEBUG - Saving Checkpoint file to: /Users/jaeyoonkim/Desktop/kus.meal/config/kus.meal.checkpoint
+2025-03-14 00:50:15,508 - instabot version: 0.117.0 (bot) - INFO - Total requests: 33

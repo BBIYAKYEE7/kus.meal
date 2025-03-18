@@ -6,7 +6,6 @@ from PIL import Image, ImageDraw, ImageFont
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
-from instabot import Bot
 
 def get_day_column_index():
     # datetime.weekday(): 월=0, 화=1, ..., 금=4, 주말은 5,6
@@ -130,15 +129,11 @@ def generate_menu_image(text, background_path, output_path, font_path="Pretendar
     print(f"Final image saved at {output_path}")
 
 def upload_to_instagram(image_path, caption, username, password):
-    if os.path.exists("config"):
-        shutil.rmtree("config")
-    bot = Bot()
-    bot.login(username=username, password=password)
-    bot.upload_photo(image_path, caption=caption)
-    uploaded_file = image_path + ".REMOVE"
-    if os.path.exists(uploaded_file):
-        os.remove(uploaded_file)
-    time.sleep(10)
+    from instagrapi import Client
+    cl = Client()
+    cl.login(username, password)
+    cl.photo_upload(image_path, caption)
+    time.sleep(0)
 
 def main():
     build_dir = "build"

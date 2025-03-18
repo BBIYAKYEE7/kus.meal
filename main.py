@@ -6,7 +6,6 @@ from PIL import Image, ImageDraw, ImageFont
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
-from instabot import Bot
 
 def get_day_column_index():
     # datetime.weekday(): 월=0, 화=1, ..., 금=4, 주말은 5,6
@@ -130,14 +129,10 @@ def generate_menu_image(text, background_path, output_path, font_path="Pretendar
     print(f"Final image saved at {output_path}")
 
 def upload_to_instagram(image_path, caption, username, password):
-    if os.path.exists("config"):
-        shutil.rmtree("config")
-    bot = Bot()
-    bot.login(username=username, password=password)
-    bot.upload_photo(image_path, caption=caption)
-    uploaded_file = image_path + ".REMOVE"
-    if os.path.exists(uploaded_file):
-        os.remove(uploaded_file)
+    from instagrapi import Client
+    cl = Client()
+    cl.login(username, password)
+    cl.photo_upload(image_path, caption)
     time.sleep(10)
 
 def main():
@@ -188,8 +183,8 @@ def main():
 
 if __name__ == "__main__":
     import schedule  # pip install schedule 필요
-    # 매일 00:01에 main() 함수를 실행하도록 스케줄 설정
-    schedule.every().day.at("00:01").do(main)
+    # 매주 월요일 00:01에 main() 함수를 실행하도록 스케줄 설정
+    schedule.every().monday.at("00:01").do(main)
     while True:
         schedule.run_pending()
         time.sleep(30)

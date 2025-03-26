@@ -6,6 +6,10 @@ from PIL import Image, ImageDraw, ImageFont
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv  # 추가: 환경변수 로드를 위한 모듈
+
+# dotenv 파일 로드 (.env)
+load_dotenv()
 
 def get_day_column_index():
     # datetime.weekday(): 월=0, 화=1, ..., 금=4, 주말은 5,6
@@ -140,8 +144,12 @@ def main():
     if not os.path.exists(build_dir):
         os.makedirs(build_dir)
     
-    username = "instagram_username"
-    password = "instagram_password"
+    # .env에서 인스타그램 자격 증명을 불러옵니다.
+    username = os.environ.get("IG_USERNAME")
+    password = os.environ.get("IG_PASSWORD")
+    if not username or not password:
+        print("Instagram 자격 증명이 설정되어 있지 않습니다.")
+        return
     
     student_menu = crawl_student_menu()
     backgrounds_student = {

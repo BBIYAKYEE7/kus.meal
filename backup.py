@@ -6,15 +6,17 @@ from PIL import Image, ImageDraw, ImageFont
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv  # 추가: 환경변수 로드 모듈
+
+# .env 파일 로드
+load_dotenv()
 
 def get_day_column_index():
     # datetime.weekday(): 월=0, 화=1, ..., 금=4, 주말은 5,6
     weekday = datetime.datetime.today().weekday()
-    # 테이블의 데이터 열(tds)의 인덱스가 월:0, 화:1, …로 설정됨
     if weekday < 5:
         return weekday
     else:
-        # 주말엔 월요일 메뉴 사용 (0번 열)
         return 0
 
 def get_rendered_html(url):
@@ -22,10 +24,9 @@ def get_rendered_html(url):
     chrome_options.add_argument("--headless")  # 헤드리스 모드 실행
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
-    # ChromeDriver가 PATH에 있다면 바로 사용, 아니면 executable_path 인자를 사용하세요.
     driver = webdriver.Chrome(options=chrome_options)
     driver.get(url)
-    time.sleep(3)  # JS 로딩 대기 (필요시 시간을 늘려주세요)
+    time.sleep(3)  # JS 로딩 대기
     html = driver.page_source
     driver.quit()
     return html
@@ -38,7 +39,6 @@ def crawl_student_menu():
     if not table:
         print("학생 메뉴 테이블을 찾지 못했습니다.")
         return {"정보 없음", "정보 없음", "정보 없음", "정보 없음", "정보 없음"}
-    # 요일별 열 인덱스 (월:0, 화:1, …, 금:4)
     col_index = get_day_column_index()
     menu_dict = {"morning": "정보 없음", "lunch(b)": "정보 없음", 
                  "lunch(j)": "정보 없음", "lunch(k)": "정보 없음", 
@@ -106,20 +106,16 @@ def generate_menu_image(text, background_path, output_path, font_path="Pretendar
         print(f"폰트 파일을 찾을 수 없습니다: {font_path}")
         font = ImageFont.load_default()
 
-    # 텍스트를 줄 단위로 분리
     lines = text.split("\n")
-    # 각 줄의 크기를 측정합니다.
     line_sizes = [draw.textbbox((0, 0), line, font=font) for line in lines]
     line_widths = [bbox[2] - bbox[0] for bbox in line_sizes]
     line_heights = [bbox[3] - bbox[1] for bbox in line_sizes]
     total_text_height = sum(line_heights) + line_spacing * (len(lines) - 1)
     max_line_width = max(line_widths) if line_widths else 0
 
-    # 중앙 정렬 후 왼쪽으로 20픽셀 이동
     x = (width - max_line_width) / 2 - 950
     y = (height - total_text_height) / 2
 
-    # 각 줄을 그리며 line_spacing을 적용합니다.
     current_y = y
     for line, h in zip(lines, line_heights):
         draw.text((x, current_y), line, fill=(0, 0, 0), font=font)
@@ -140,9 +136,13 @@ def main():
     if not os.path.exists(build_dir):
         os.makedirs(build_dir)
     
-    username = "instagram_username"
-    password = "instagram_password"
-    
+    # .env에서 인스타그램 자격증명을 불러옵니다.
+    username = os.environ.get("IG_USERNAME")
+    password = os.environ.get("IG_PASSWORD")
+    if not username or not password:
+        print("Instagram 자격 증명이 설정되어 있지 않습니다.")
+        return
+
     student_menu = crawl_student_menu()
     backgrounds_student = {
         "morning": "assets/morning.png",
@@ -168,7 +168,6 @@ def main():
         "lunch(t)": "assets/lunch(t).png"
     }
     for meal, bg_path in backgrounds_staff.items():
-        # staff_menu는 set이므로 첫번째 요소를 사용합니다.
         staff_menu_text = next(iter(staff_menu)) if staff_menu else "정보 없음"
         staff_menu_text = staff_menu_text.replace(", ", ",\n")
         caption = f"\n{staff_menu_text}"

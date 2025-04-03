@@ -92,7 +92,7 @@ def crawl_staff_menu():
                     day_menu = ", ".join(menu_items)
     return {day_menu}
 
-def generate_menu_image(text, background_path, output_path, font_path="Pretendard-Medium.ttf", font_size=200, line_spacing=30):
+def generate_menu_image(text, background_path, output_path, font_path="Pretendard-Medium.ttf", font_size=200, line_spacing=30, text_color=(51, 51, 51)):
     try:
         image = Image.open(background_path).convert("RGB")
     except Exception as e:
@@ -106,20 +106,30 @@ def generate_menu_image(text, background_path, output_path, font_path="Pretendar
         print(f"폰트 파일을 찾을 수 없습니다: {font_path}")
         font = ImageFont.load_default()
 
+    # 날짜용 폰트 크기를 기존 폰트 크기의 50%로 설정
+    date_font_size = int(font_size * 0.75)
+    try:
+        date_font = ImageFont.truetype(font_path, date_font_size)
+    except IOError:
+        print(f"폰트 파일을 찾을 수 없습니다: {font_path}")
+        date_font = ImageFont.load_default()
+
+    # 날짜를 고정 위치에 그립니다. (왼쪽 70px, 이미지 높이의 10% 위치)
+    date_str = datetime.datetime.today().strftime("%Y년 %m월 %d일")
+    date_x = 2600
+    date_y = height * 0.23
+    draw.text((date_x, date_y), date_str, fill=text_color, font=date_font)
+    
+    # 메뉴 텍스트의 시작 위치를 별도로 지정 (왼쪽 70px, 이미지 높이의 30% 위치)
+    menu_x = 500
+    menu_y = height * 0.4
     lines = text.split("\n")
-    line_sizes = [draw.textbbox((0, 0), line, font=font) for line in lines]
-    line_widths = [bbox[2] - bbox[0] for bbox in line_sizes]
-    line_heights = [bbox[3] - bbox[1] for bbox in line_sizes]
-    total_text_height = sum(line_heights) + line_spacing * (len(lines) - 1)
-    max_line_width = max(line_widths) if line_widths else 0
-
-    x = (width - max_line_width) / 2 - 950
-    y = (height - total_text_height) / 2
-
-    current_y = y
-    for line, h in zip(lines, line_heights):
-        draw.text((x, current_y), line, fill=(0, 0, 0), font=font)
-        current_y += h + line_spacing
+    current_y = menu_y
+    for line in lines:
+        draw.text((menu_x, current_y), line, fill=text_color, font=font)
+        bbox = draw.textbbox((0, 0), line, font=font)
+        line_height = bbox[3] - bbox[1]
+        current_y += line_height + line_spacing
 
     image.save(output_path)
     print(f"Final image saved at {output_path}")
@@ -153,7 +163,7 @@ def main():
     }
     for meal, bg_path in backgrounds_student.items():
         menu_text = student_menu.get(meal, "정보 없음").replace(", ", ",\n")
-        caption = f"\n{menu_text}"
+        caption = f"{menu_text}"  # 앞에 불필요한 개행 제거
         output_path = os.path.join(build_dir, f"student_{meal}.png")
         print(f"Generating final image for student cafeteria {meal} using background {bg_path}...")
         generate_menu_image(caption, background_path=bg_path, output_path=output_path)
@@ -170,7 +180,7 @@ def main():
     for meal, bg_path in backgrounds_staff.items():
         staff_menu_text = next(iter(staff_menu)) if staff_menu else "정보 없음"
         staff_menu_text = staff_menu_text.replace(", ", ",\n")
-        caption = f"\n{staff_menu_text}"
+        caption = f"{staff_menu_text}"  # 앞에 불필요한 개행 제거
         output_path = os.path.join(build_dir, f"staff_{meal}.png")
         print(f"Generating final image for staff cafeteria {meal} using background {bg_path}...")
         generate_menu_image(caption, background_path=bg_path, output_path=output_path)

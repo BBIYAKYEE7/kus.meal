@@ -197,8 +197,8 @@ def main():
 
 if __name__ == "__main__":
     import schedule  # pip install schedule 필요
-    # 매주 월요일 00:01에 main() 함수를 실행하도록 스케줄 설정
-    schedule.every().monday.at("00:01").do(main)
+    for day in ["monday", "tuesday", "wednesday", "thursday", "friday"]:
+        schedule.every().__getattribute__(day).at("00:01").do(main)
     while True:
         schedule.run_pending()
         time.sleep(30)

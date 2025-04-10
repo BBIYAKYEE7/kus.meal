@@ -159,11 +159,11 @@ def main():
     
     student_menu = crawl_student_menu()
     backgrounds_student = {
-        "morning": "build/student_morning.png",
-        "lunch(b)": "build/student_lunch(b).png",
-        "lunch(j)": "build/student_lunch(j).png",
-        "lunch(k)": "build/student_lunch(k).png",
-        "dinner": "build/student_dinner.png"
+        "morning": "assets/morning.png",
+        "lunch(b)": "assets/lunch(b).png",
+        "lunch(j)": "assets/lunch(j).png",
+        "lunch(k)": "assets/lunch(k).png",
+        "dinner": "assets/dinner.png"
     }
     for meal, bg_path in backgrounds_student.items():
         menu_text = student_menu.get(meal, "정보 없음").replace(", ", ",\n")

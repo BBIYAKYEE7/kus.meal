@@ -57,8 +57,8 @@ IG_PASSWORD=your_instagram_password
 ⸻
 
 ## ⏱ 실행 주기
-	•	매주 월요일부터 금요일까지, 매일 00:01에 자동 실행
-	•	schedule 라이브러리를 통해 스케줄 관리
+•	매주 월요일부터 금요일까지, 매일 00:01에 자동 실행
+•	schedule 라이브러리를 통해 스케줄 관리
 
 ⸻
 
@@ -67,22 +67,7 @@ IG_PASSWORD=your_instagram_password
 생성된 이미지는 날짜와 메뉴 정보가 포함된 다음과 같은 포맷입니다.
 
 📌 조식
-<img src="build/student_morning.png" alt="조식 샘플" width="500" height="500/>
-
-📌 중식(한식)
-<img src="build/student_lunch(k).png" alt="조식 샘플" width="500" height="500/>
-
-📌 중식(일품)
-<img src="build/student_lunch(j).png" alt="조식 샘플" width="500" height="500/>
-
-📌 중식(분식)
-<img src="build/student_lunch(b).png" alt="조식 샘플" width="500" height="500/>
-
-📌 중식(교직원식당)
-<img src="build/staff_lunch(t).png" alt="조식 샘플" width="500" height="500/>
-
-📌 석식(한식)
-<img src="build/student_dinner.png" alt="조식 샘플" width="500" height="500/>
+![image](./bulid/student_morning.png)
 
 ※ 위 이미지는 예시이며, 실제 메뉴는 사이트에서 자동으로 크롤링됩니다.
 

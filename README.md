@@ -37,6 +37,7 @@
 ├── build/                 # 결과 이미지 저장 폴더 (자동 생성)
 ├── Pretendard-Medium.ttf  # 사용되는 폰트 파일
 ├── .env                   # 인스타그램 계정 정보 저장 파일 (비공개)
+├── backup.py              # 백업코드파일 (즉시 업로드)
 ├── main.py                # 전체 코드 실행 파일
 └── README.md              # 프로젝트 설명 파일
 ```
@@ -86,7 +87,9 @@ pip install -r requirements.txt
 
 3. 실행
 
+```
 python main.py
+```
 
 백그라운드 실행이나 서버에서의 자동 실행은 cron 또는 systemd를 사용해 관리할 수 있습니다.
 

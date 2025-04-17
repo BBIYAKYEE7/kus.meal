@@ -129,11 +129,11 @@ def main():
         os.makedirs(build_dir)
     
     # .env에서 인스타그램 자격 증명을 불러옵니다.
-    #username = os.environ.get("IG_USERNAME")
-    #password = os.environ.get("IG_PASSWORD")
-    #if not username or not password:
-    #    print("Instagram 자격 증명이 설정되어 있지 않습니다.")
-    #    return
+    username = os.environ.get("IG_USERNAME")
+    password = os.environ.get("IG_PASSWORD")
+    if not username or not password:
+        print("Instagram 자격 증명이 설정되어 있지 않습니다.")
+        return
 
     menu_data = crawl_menu_data()
     if not menu_data:
@@ -189,7 +189,7 @@ def main():
             print(f"Image generation failed for student cafeteria {meal}")
         else:
             print(f"Uploading student cafeteria {meal} with image {output_path}...")
-            #upload_to_instagram(output_path, caption, username, password)
+            upload_to_instagram(output_path, caption, username, password)
 
     # 교직원식당 처리
     staff_api = menu_data.get("교직원식당", {})
@@ -219,7 +219,7 @@ def main():
             print(f"Image generation failed for staff cafeteria {meal}")
         else:
             print(f"Uploading staff cafeteria {meal} with image {output_path}...")
-            #upload_to_instagram(output_path, caption, username, password)
+            upload_to_instagram(output_path, caption, username, password)
 
 if __name__ == "__main__":
     main()

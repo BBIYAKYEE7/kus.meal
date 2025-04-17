@@ -71,6 +71,7 @@ IG_PASSWORD=your_instagram_password
 ![image](build/student_조식.png)
 
 ※ 위 이미지는 예시이며, 실제 메뉴는 사이트에서 자동으로 크롤링됩니다.
+※ 예시로 올라온 학식메뉴는 실제 고려대학교 세종캠퍼스의 04월 17일 식단입니다. /build에 중식 및 석식 파일도 확인해보세요!
 
 ⸻
 

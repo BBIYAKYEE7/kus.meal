@@ -68,7 +68,7 @@ IG_PASSWORD=your_instagram_password
 생성된 이미지는 날짜와 메뉴 정보가 포함된 다음과 같은 포맷입니다.
 
 📌 조식
-![image](build/student_morning.png)
+![image](build/student_조식.png)
 
 ※ 위 이미지는 예시이며, 실제 메뉴는 사이트에서 자동으로 크롤링됩니다.
 

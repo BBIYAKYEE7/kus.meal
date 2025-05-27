@@ -193,23 +193,26 @@ def main():
 
     # 교직원식당 처리
     staff_api = menu_data.get("교직원식당", {})
-    # 여러 식사(예: 조식, 중식)를 처리할 수 있도록 딕셔너리 사용
     staff_menu_text = {}
     backgrounds_staff = {}
-    # 여기서 원하는 식사 목록 설정 (현재 교직원은 중식만 존재)
-    meals = ["중식"]
-    
+    meals = ["조식"]
+
     for meal in meals:
+        menu_found = False
         if "메뉴" in staff_api and meal in staff_api["메뉴"]:
-            weekday = datetime.datetime.today().weekday()  
+            weekday = datetime.datetime.today().weekday()
             target_day_staff = ["월", "화", "수", "목", "금"][weekday] if weekday < 5 else "월"
             menu_items = staff_api["메뉴"][meal].get(target_day_staff, {}).get("메뉴")
             if menu_items:
                 staff_menu_text[meal] = "\n".join(menu_items)
-                # 각 식사에 따른 배경 이미지 등록 (교직원 조식 이미지가 있다면 해당 경로로)
-                if meal == "중식":
-                    backgrounds_staff[meal] = "assets/lunch(t).png"
-    
+                menu_found = True
+        # 메뉴가 없더라도 항상 배경 이미지를 등록
+        if meal == "조식":
+            backgrounds_staff[meal] = "assets/lunch(t).png"
+        # 메뉴가 없으면 "정보 없음"으로 설정
+        if not menu_found:
+            staff_menu_text[meal] = "정보 없음"
+
     for meal, bg_path in backgrounds_staff.items():
         caption = staff_menu_text.get(meal, "정보 없음")
         output_path = os.path.join(build_dir, f"staff_{meal}.png")

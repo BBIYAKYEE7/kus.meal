@@ -14,7 +14,7 @@ def crawl_menu_data():
     # MENU_PAGE_URL 환경변수에 크롤링할 페이지 URL을 설정합니다.
     url = os.environ.get("MENU_PAGE_URL", "https://sejong.korea.ac.kr/koreaSejong/8028/subview.do")
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=10, verify=False)
         if response.status_code != 200:
             print(f"HTTP error! status: {response.status_code}")
             return None
@@ -97,21 +97,33 @@ def generate_menu_image(text, background_path, output_path, font_path="Pretendar
         print(f"폰트 파일을 찾을 수 없습니다: {font_path}")
         date_font = ImageFont.load_default()
 
-    # 날짜를 고정 위치 (x=2600, 이미지 높이의 23%)에 그립니다.
+    # 텍스트 치수 호환성 헬퍼: Pillow 버전에 따라 textbbox가 없을 수 있으므로 폴백을 제공합니다.
+    def _text_bbox(draw_obj, txt, fnt):
+        try:
+            return draw_obj.textbbox((0, 0), txt, font=fnt)
+        except Exception:
+            # draw.textsize/ font.getsize 를 이용해 (0,0,w,h) 형태로 반환
+            try:
+                w, h = draw_obj.textsize(txt, font=fnt)
+            except Exception:
+                w, h = fnt.getsize(txt)
+            return (0, 0, w, h)
+
+    # 날짜를 원래의 좌우 위치(고정 x)에 두고, 세로 위치만 조정합니다.
     date_str = datetime.datetime.today().strftime("%Y년 %m월 %d일")
     date_x = 2600
-    date_y = height * 0.23
+    date_y = height * 0.18
     draw.text((date_x, date_y), date_str, fill=text_color, font=date_font)
-    
-    # 메뉴 텍스트 시작 위치 (x=500, 이미지 높이의 40%)에 그립니다.
+
+    # 메뉴 텍스트는 원래의 왼쪽 x 위치를 유지하고 세로 위치만 조정하여 그립니다.
     menu_x = 500
-    menu_y = height * 0.4
+    menu_y = height * 0.38
     lines = text.split("\n")
     current_y = menu_y
     for line in lines:
-        draw.text((menu_x, current_y), line, fill=text_color, font=font)
-        bbox = draw.textbbox((0, 0), line, font=font)
+        bbox = _text_bbox(draw, line, font)
         line_height = bbox[3] - bbox[1]
+        draw.text((menu_x, current_y), line, fill=text_color, font=font)
         current_y += line_height + line_spacing
 
     image.save(output_path)
@@ -119,9 +131,20 @@ def generate_menu_image(text, background_path, output_path, font_path="Pretendar
 
 def upload_to_instagram(image_path, caption, username, password):
     from instagrapi import Client
-    client = Client()
-    client.login(username, password)
-    client.photo_upload(image_path, caption)
+    # instagrapi can raise various exceptions (e.g., HTTP errors or UnknownError).
+    # Wrap login/upload in try/except so a single failure doesn't stop the whole scheduler.
+    try:
+        client = Client()
+        client.login(username, password)
+    except Exception as e:
+        print(f"Instagram login failed: {e}")
+        return False
+    try:
+        client.photo_upload(image_path, caption)
+    except Exception as e:
+        print(f"Instagram upload failed: {e}")
+        return False
+    return True
 
 def main():
     build_dir = "build"
@@ -227,7 +250,9 @@ def main():
 if __name__ == "__main__":
     import schedule  # pip install schedule 필요
     for day in ["monday", "tuesday", "wednesday", "thursday", "friday"]:
-        schedule.every().__getattribute__(day).at("00:01").do(main)
+        # 월요일만 07:00에 업로드하도록 설정하고, 나머지는 기존 시간(00:00)을 유지합니다.
+        at_time = "07:00" if day == "monday" else "00:00"
+        schedule.every().__getattribute__(day).at(at_time).do(main)
     while True:
         schedule.run_pending()
         time.sleep(30)

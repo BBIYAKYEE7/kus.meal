@@ -13,15 +13,21 @@ load_dotenv()
 def crawl_menu_data():
     # MENU_PAGE_URL 환경변수에 크롤링할 페이지 URL을 설정합니다.
     url = os.environ.get("MENU_PAGE_URL", "https://sejong.korea.ac.kr/koreaSejong/8028/subview.do")
+    
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=10, verify=False)
         if response.status_code != 200:
             print(f"HTTP error! status: {response.status_code}")
             return None
     except Exception as e:
         print(f"메뉴 페이지 요청 에러: {e}")
         return None
+        
+    return parse_response(response)
 
+def parse_response(response):
+
+    """응답을 파싱하여 메뉴 데이터를 추출합니다."""
     soup = BeautifulSoup(response.text, "html.parser")
     days = ['월', '화', '수', '목', '금']
     result = {}

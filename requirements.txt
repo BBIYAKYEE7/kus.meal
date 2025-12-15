@@ -4,3 +4,5 @@ instagrapi
 pillow
 python-dotenv
 schedule
+certifi
+requests

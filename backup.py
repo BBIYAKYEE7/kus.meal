@@ -2,10 +2,14 @@ import os
 import time
 import datetime
 import requests
+import urllib3
 from bs4 import BeautifulSoup  # 새로 추가된 모듈
 from PIL import Image, ImageDraw, ImageFont
 from dotenv import load_dotenv  # 환경변수 로드
 import datetime
+
+# SSL 경고 비활성화
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # .env 파일 로드
 load_dotenv()
@@ -125,9 +129,62 @@ def generate_menu_image(text, background_path, output_path, font_path="Pretendar
 
 def upload_to_instagram(image_path, caption, username, password):
     from instagrapi import Client
-    client = Client()
-    client.login(username, password)
-    client.photo_upload(image_path, caption)
+    import json
+    
+    if not username or not password:
+        print("Instagram 자격 증명이 설정되어 있지 않습니다.")
+        return False
+    
+    session_file = "config/instagram_session.json"
+    
+    try:
+        client = Client()
+        
+        # 세션 로드 시도
+        if os.path.exists(session_file):
+            try:
+                client.load_settings(session_file)
+                client.login(username, password)
+                print("저장된 세션으로 로그인 성공!")
+            except Exception as e:
+                print(f"저장된 세션 로그인 실패, 새로 로그인 시도: {e}")
+                # 세션 파일 삭제 후 새로 로그인
+                os.remove(session_file)
+                client = Client()
+                client.login(username, password)
+        else:
+            print(f"Instagram 새 로그인 시도: {username}")
+            client.login(username, password)
+        
+        # 세션 저장
+        os.makedirs("config", exist_ok=True)
+        client.dump_settings(session_file)
+        print("로그인 성공, 세션 저장됨!")
+        
+        # 업로드 시도
+        print(f"이미지 업로드 중: {image_path}")
+        client.photo_upload(image_path, caption)
+        print("업로드 성공!")
+        return True
+        
+    except Exception as e:
+        error_msg = str(e)
+        if "JSONDecodeError" in error_msg or "challenge" in error_msg.lower():
+            print(f"Instagram 보안 검증 또는 API 오류 발생: {type(e).__name__}")
+            print("해결 방법:")
+            print("1. 잠시 후 다시 시도해주세요")
+            print("2. Instagram 앱에서 로그인해서 보안 인증을 완료해주세요")
+            print("3. 다른 디바이스/브라우저에서 Instagram에 로그인해주세요")
+            print("4. 2단계 인증이 활성화되어 있다면 비활성화해주세요")
+        else:
+            print(f"Instagram 오류: {type(e).__name__}: {e}")
+        
+        # 오류 시 세션 파일 삭제
+        if os.path.exists(session_file):
+            os.remove(session_file)
+            print("오류로 인해 세션 파일을 삭제했습니다.")
+        
+        return False
 
 def main():
     build_dir = "build"

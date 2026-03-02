@@ -261,9 +261,9 @@ def main():
             print(f"Uploading student cafeteria {meal} with image {output_path}...")
             upload_success = upload_to_instagram(output_path, caption, username, password)
             if upload_success:
-                print(f"\u2713 {meal} 업로드 성공!")
+                print(f"✓ {meal} 업로드 성공!")
             else:
-                print(f"\u2717 {meal} 업로드 실패, 다음 메뉴로 계속...")
+                print(f"✗ {meal} 업로드 실패, 다음 메뉴로 계속...")
 
     # 교직원식당 처리
     staff_api = menu_data.get("교직원식당", {})
@@ -298,9 +298,9 @@ def main():
             print(f"Uploading staff cafeteria {meal} with image {output_path}...")
             upload_success = upload_to_instagram(output_path, caption, username, password)
             if upload_success:
-                print(f"\u2713 {meal} 업로드 성공!")
+                print(f"✓ {meal} 업로드 성공!")
             else:
-                print(f"\u2717 {meal} 업로드 실패, 다음 메뉴로 계속...")
+                print(f"✗ {meal} 업로드 실패, 다음 메뉴로 계속...")
 
 if __name__ == "__main__":
     import schedule  # pip install schedule 필요

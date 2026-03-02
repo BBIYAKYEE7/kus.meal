@@ -252,7 +252,11 @@ def main():
             print(f"Image generation failed for student cafeteria {meal}")
         else:
             print(f"Uploading student cafeteria {meal} with image {output_path}...")
-            upload_to_instagram(output_path, caption, username, password)
+            upload_success = upload_to_instagram(output_path, caption, username, password)
+            if upload_success:
+                print(f"✓ {meal} 업로드 성공!")
+            else:
+                print(f"✗ {meal} 업로드 실패, 다음 메뉴로 계속...")
 
     # 교직원식당 처리
     staff_api = menu_data.get("교직원식당", {})
@@ -285,7 +289,11 @@ def main():
             print(f"Image generation failed for staff cafeteria {meal}")
         else:
             print(f"Uploading staff cafeteria {meal} with image {output_path}...")
-            upload_to_instagram(output_path, caption, username, password)
+            upload_success = upload_to_instagram(output_path, caption, username, password)
+            if upload_success:
+                print(f"✓ {meal} 업로드 성공!")
+            else:
+                print(f"✗ {meal} 업로드 실패, 다음 메뉴로 계속...")
 
 if __name__ == "__main__":
     main()

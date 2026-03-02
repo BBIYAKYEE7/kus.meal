@@ -2,10 +2,14 @@ import os
 import time
 import datetime
 import requests
+import urllib3
 from bs4 import BeautifulSoup  # 새로 추가된 모듈
 from PIL import Image, ImageDraw, ImageFont
 from dotenv import load_dotenv  # 환경변수 로드
 import datetime
+
+# SSL 경고 비활성화
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # .env 파일 로드
 load_dotenv()

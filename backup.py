@@ -111,7 +111,7 @@ def generate_menu_image(text, background_path, output_path, font_path="Pretendar
     # 날짜를 고정 위치 (x=2600, 이미지 높이의 18%)에 그립니다.
     date_str = datetime.datetime.today().strftime("%Y년 %m월 %d일")
     date_x = 2600
-    date_y = height * 0.18  # 0.23에서 0.18로 줄여서 위로 이동
+    date_y = height * 0.18  # 원래대로 되돌림
     draw.text((date_x, date_y), date_str, fill=text_color, font=date_font)
     
     # 메뉴 텍스트 시작 위치 (x=500, 이미지 높이의 40%)에 그립니다.

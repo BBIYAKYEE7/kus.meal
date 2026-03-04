@@ -161,12 +161,12 @@ def generate_menu_image(text, background_path, output_path, font_path="Pretendar
     # 날짜를 원래의 좌우 위치(고정 x)에 두고, 세로 위치만 조정합니다.
     date_str = datetime.datetime.today().strftime("%Y년 %m월 %d일")
     date_x = 2600
-    date_y = height * 0.13  # 0.18에서 0.13으로 줄여서 위로 이동
+    date_y = height * 0.18 
     draw.text((date_x, date_y), date_str, fill=text_color, font=date_font)
 
     # 메뉴 텍스트는 원래의 왼쪽 x 위치를 유지하고 세로 위치만 조정하여 그립니다.
     menu_x = 500
-    menu_y = height * 0.38
+    menu_y = height * 0.4
     lines = text.split("\n")
     current_y = menu_y
     for line in lines:

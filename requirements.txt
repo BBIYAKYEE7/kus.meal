@@ -1,6 +1,6 @@
 selenium
 beautifulsoup4
-instagrapi
+instagrapi>=1.16.34
 pillow
 python-dotenv
 schedule

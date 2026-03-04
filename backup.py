@@ -3,6 +3,7 @@ import time
 import datetime
 import requests
 import urllib3
+import random
 from bs4 import BeautifulSoup  # 새로 추가된 모듈
 from PIL import Image, ImageDraw, ImageFont
 from dotenv import load_dotenv  # 환경변수 로드
@@ -107,10 +108,10 @@ def generate_menu_image(text, background_path, output_path, font_path="Pretendar
         print(f"폰트 파일을 찾을 수 없습니다: {font_path}")
         date_font = ImageFont.load_default()
 
-    # 날짜를 고정 위치 (x=2600, 이미지 높이의 23%)에 그립니다.
+    # 날짜를 고정 위치 (x=2600, 이미지 높이의 18%)에 그립니다.
     date_str = datetime.datetime.today().strftime("%Y년 %m월 %d일")
     date_x = 2600
-    date_y = height * 0.23
+    date_y = height * 0.18  # 0.23에서 0.18로 줄여서 위로 이동
     draw.text((date_x, date_y), date_str, fill=text_color, font=date_font)
     
     # 메뉴 텍스트 시작 위치 (x=500, 이미지 높이의 40%)에 그립니다.
@@ -129,7 +130,9 @@ def generate_menu_image(text, background_path, output_path, font_path="Pretendar
 
 def upload_to_instagram(image_path, caption, username, password):
     from instagrapi import Client
+    from instagrapi.exceptions import LoginRequired, ChallengeRequired, FeedbackRequired
     import json
+    import random
     
     if not username or not password:
         print("Instagram 자격 증명이 설정되어 있지 않습니다.")
@@ -140,51 +143,95 @@ def upload_to_instagram(image_path, caption, username, password):
     try:
         client = Client()
         
+        # 향상된 클라이언트 설정 (봇 탐지 회피)
+        client.delay_range = [1, 3]  # 요청 간격 랜덤화
+        
         # 세션 로드 시도
+        login_success = False
         if os.path.exists(session_file):
             try:
                 client.load_settings(session_file)
-                client.login(username, password)
+                client.get_timeline_feed()  # 세션 유효성 검증
+                login_success = True
                 print("저장된 세션으로 로그인 성공!")
-            except Exception as e:
-                print(f"저장된 세션 로그인 실패, 새로 로그인 시도: {e}")
+            except (LoginRequired, ChallengeRequired, FeedbackRequired) as e:
+                print(f"저장된 세션 만료: {e}")
                 # 세션 파일 삭제 후 새로 로그인
-                os.remove(session_file)
-                client = Client()
-                client.login(username, password)
-        else:
+                if os.path.exists(session_file):
+                    os.remove(session_file)
+            except Exception as e:
+                print(f"세션 로드 오류: {e}")
+                if os.path.exists(session_file):
+                    os.remove(session_file)
+        
+        if not login_success:
             print(f"Instagram 새 로그인 시도: {username}")
-            client.login(username, password)
+            # 재시도 로직 추가
+            for attempt in range(3):
+                try:
+                    client = Client()  # 새 클라이언트 인스턴스
+                    client.delay_range = [1, 3]
+                    time.sleep(random.uniform(2, 5))  # 랜덤 지연
+                    client.login(username, password)
+                    login_success = True
+                    break
+                except (ChallengeRequired, FeedbackRequired) as e:
+                    print(f"로그인 시도 {attempt + 1} 실패: {e}")
+                    if attempt == 2:  # 마지막 시도
+                        raise e
+                    time.sleep(random.uniform(5, 10))
         
         # 세션 저장
-        os.makedirs("config", exist_ok=True)
-        client.dump_settings(session_file)
-        print("로그인 성공, 세션 저장됨!")
+        if login_success:
+            os.makedirs("config", exist_ok=True)
+            client.dump_settings(session_file)
+            print("로그인 성공, 세션 저장됨!")
+            
+            # 업로드 시도 (재시도 로직 포함)
+            print(f"이미지 업로드 중: {image_path}")
+            for upload_attempt in range(2):
+                try:
+                    time.sleep(random.uniform(1, 3))  # 업로드 전 지연
+                    media = client.photo_upload(image_path, caption)
+                    print(f"업로드 성공! 미디어 ID: {media.id}")
+                    return True
+                except Exception as upload_e:
+                    print(f"업로드 시도 {upload_attempt + 1} 실패: {upload_e}")
+                    if upload_attempt == 1:
+                        raise upload_e
+                    time.sleep(random.uniform(3, 7))
         
-        # 업로드 시도
-        print(f"이미지 업로드 중: {image_path}")
-        client.photo_upload(image_path, caption)
-        print("업로드 성공!")
-        return True
+        return False
+        
+    except ChallengeRequired as e:
+        print(f"Instagram 보안 검증 필요: {e}")
+        print("해결 방법:")
+        print("1. Instagram 앱/웹사이트에서 로그인하여 보안 검증 완료")
+        print("2. 30분~1시간 후 재시도")
+        print("3. 새로운 기기로 인식되었을 가능성 - 앱에서 승인 필요")
+        
+    except FeedbackRequired as e:
+        print(f"Instagram 계정 제한: {e}")
+        print("해결 방법:")
+        print("1. 계정이 일시적으로 제한됨 - 24시간 후 재시도")
+        print("2. 스팸으로 분류되었을 가능성 - 며칠 후 재시도")
+        
+    except LoginRequired as e:
+        print(f"로그인 필요: {e}")
+        print("계정 정보를 확인하고 다시 시도해주세요")
         
     except Exception as e:
         error_msg = str(e)
-        if "JSONDecodeError" in error_msg or "challenge" in error_msg.lower():
-            print(f"Instagram 보안 검증 또는 API 오류 발생: {type(e).__name__}")
-            print("해결 방법:")
-            print("1. 잠시 후 다시 시도해주세요")
-            print("2. Instagram 앱에서 로그인해서 보안 인증을 완료해주세요")
-            print("3. 다른 디바이스/브라우저에서 Instagram에 로그인해주세요")
-            print("4. 2단계 인증이 활성화되어 있다면 비활성화해주세요")
-        else:
-            print(f"Instagram 오류: {type(e).__name__}: {e}")
-        
-        # 오류 시 세션 파일 삭제
-        if os.path.exists(session_file):
-            os.remove(session_file)
-            print("오류로 인해 세션 파일을 삭제했습니다.")
-        
-        return False
+        print(f"Instagram 오류: {type(e).__name__}: {e}")
+        if "two_factor" in error_msg.lower():
+            print("2단계 인증이 활성화되어 있습니다. 비활성화해주세요")
+        elif "checkpoint" in error_msg.lower():
+            print("계정 검증이 필요합니다. Instagram 앱에서 확인해주세요")
+    
+    # 오류 시 세션 파일 삭제
+    if os.path.exists(session_file):
+        os.remove(session_file)
+    return False
 
 def main():
     build_dir = "build"

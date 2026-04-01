@@ -18,6 +18,17 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # .env 파일 로드
 load_dotenv()
 
+def resolve_background_path(default_path, today=None):
+    if today is None:
+        today = datetime.datetime.today()
+
+    if today.month == 4 and today.day == 1:
+        yonsei_path = os.path.join("assets", "yonsei", os.path.basename(default_path))
+        if os.path.exists(yonsei_path):
+            return yonsei_path
+
+    return default_path
+
 def crawl_menu_data():
     # MENU_PAGE_URL 환경변수에 크롤링할 페이지 URL을 설정합니다.
     url = os.environ.get("MENU_PAGE_URL", "https://sejong.korea.ac.kr/koreaSejong/8028/subview.do")
@@ -358,11 +369,11 @@ def main():
             else:
                 print(f"⚠️ {meal} 메뉴 데이터가 없습니다. 업로드 건너뜀.")
     backgrounds_student = {
-        "조식": "assets/morning.png",
-        "중식 - 한식": "assets/lunch(k).png",
-        "중식 - 분식": "assets/lunch(b).png",
-        "중식 - 일품": "assets/lunch(j).png",
-        "석식": "assets/dinner.png"
+        "조식": resolve_background_path("assets/morning.png"),
+        "중식 - 한식": resolve_background_path("assets/lunch(k).png"),
+        "중식 - 분식": resolve_background_path("assets/lunch(b).png"),
+        "중식 - 일품": resolve_background_path("assets/lunch(j).png"),
+        "석식": resolve_background_path("assets/dinner.png")
     }
 
     meal = {
@@ -395,7 +406,7 @@ def main():
     # 교직원식당 처리
     staff_api = menu_data.get("교직원식당", {})
     staff_menu = {}
-    backgrounds_staff = {"조식": "assets/lunch(t).png"}
+    backgrounds_staff = {"조식": resolve_background_path("assets/lunch(t).png")}
     meals = ["조식"]
 
     for meal in meals:

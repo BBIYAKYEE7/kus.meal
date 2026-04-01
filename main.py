@@ -5,6 +5,8 @@ from datetime import timedelta
 import requests
 import urllib3
 import random
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from bs4 import BeautifulSoup  # 새로 추가된 모듈
 from PIL import Image, ImageDraw, ImageFont
 from dotenv import load_dotenv  # 환경변수 로드
@@ -19,13 +21,38 @@ load_dotenv()
 def crawl_menu_data():
     # MENU_PAGE_URL 환경변수에 크롤링할 페이지 URL을 설정합니다.
     url = os.environ.get("MENU_PAGE_URL", "https://sejong.korea.ac.kr/koreaSejong/8028/subview.do")
+    request_timeout = int(os.environ.get("MENU_REQUEST_TIMEOUT", "20"))
+    request_retries = int(os.environ.get("MENU_REQUEST_RETRIES", "3"))
+
+    session = requests.Session()
+    retry = Retry(
+        total=request_retries,
+        connect=request_retries,
+        read=request_retries,
+        backoff_factor=1,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["GET"],
+        raise_on_status=False,
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Connection": "keep-alive",
+    }
+
     try:
-        response = requests.get(url, timeout=10, verify=False)
+        response = session.get(url, timeout=(request_timeout, request_timeout), verify=False, headers=headers)
         if response.status_code != 200:
             print(f"HTTP error! status: {response.status_code}")
             return None
+        response.encoding = response.apparent_encoding
     except Exception as e:
-        print(f"메뉴 페이지 요청 에러: {e}")
+        print(f"메뉴 페이지 요청 에러 (timeout={request_timeout}s, retries={request_retries}): {e}")
         return None
 
     soup = BeautifulSoup(response.text, "html.parser")
@@ -405,7 +432,7 @@ def main():
     return True  # 성공적으로 완료
 
 def run_main_with_retry():
-    """메뉴 크롤링이 성공할 때까지 1시간 간격으로 재시도하는 함수"""
+    """메뉴 크롤링이 성공할 때까지 1분 간격으로 재시도하는 함수"""
     while True:
         try:
             print(f"\n🚀 메뉴 처리 시작: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
@@ -414,19 +441,24 @@ def run_main_with_retry():
                 print("✅ 메뉴 처리가 성공적으로 완료되었습니다!")
                 break  # 성공하면 루프 종료
             else:
-                print("❌ 메뉴 크롤링 실패. 1시간 후 다시 시도합니다.")
-                print(f"⏰ 다음 시도 시간: {(datetime.datetime.now() + datetime.timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S')}")
-                time.sleep(3600)  # 1시간 = 3600초 대기
+                print("❌ 메뉴 크롤링 실패. 1분 후 다시 시도합니다.")
+                print(f"⏰ 다음 시도 시간: {(datetime.datetime.now() + datetime.timedelta(minutes=1)).strftime('%Y-%m-%d %H:%M:%S')}")
+                time.sleep(60)  # 1분 = 60초 대기
         except KeyboardInterrupt:
             print("\n❌ 사용자가 프로그램을 중단했습니다.")
             break
         except Exception as e:
             print(f"❌ 예상치 못한 오류 발생: {e}")
-            print("⏰ 1시간 후 재시도합니다.")
-            time.sleep(3600)
+            print("⏰ 1분 후 재시도합니다.")
+            time.sleep(60)
 
 if __name__ == "__main__":
     import schedule  # pip install schedule 필요
+
+    # 프로그램 시작 시 1회 즉시 실행 (성공할 때까지 재시도 로직 포함)
+    run_main_with_retry()
+
+    # 이후부터는 기존 스케줄(크론 성격의 정시 실행)대로 동작
     for day in ["monday", "tuesday", "wednesday", "thursday", "friday"]:
         # 월요일만 07:00에 업로드하도록 설정하고, 나머지는 기존 시간(00:00)을 유지합니다.
         at_time = "07:00" if day == "monday" else "00:00"

@@ -52,7 +52,12 @@
 env
 IG_USERNAME=your_instagram_username
 IG_PASSWORD=your_instagram_password
+HOLIDAY_FAIL_SAFE_SKIP=true
+HOLIDAY_REQUEST_TIMEOUT=10
 ```
+
+- `HOLIDAY_FAIL_SAFE_SKIP=true`: 공휴일 API 조회 실패 시 안전하게 업로드를 건너뜁니다.
+- `HOLIDAY_REQUEST_TIMEOUT=10`: 공휴일 API 요청 타임아웃(초)입니다.
 
 
 ---

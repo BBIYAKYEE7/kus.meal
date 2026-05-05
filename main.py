@@ -18,6 +18,38 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # .env 파일 로드
 load_dotenv()
 
+def get_korean_public_holidays(year=None):
+    """인터넷 API에서 한국 공휴일 목록을 조회합니다."""
+    target_year = year or datetime.datetime.today().year
+    holiday_api_url = f"https://date.nager.at/api/v3/PublicHolidays/{target_year}/KR"
+    holiday_timeout = int(os.environ.get("HOLIDAY_REQUEST_TIMEOUT", "10"))
+
+    try:
+        response = requests.get(holiday_api_url, timeout=holiday_timeout)
+        response.raise_for_status()
+        holidays = response.json()
+        return {
+            item.get("date"): item.get("localName") or item.get("name") or "공휴일"
+            for item in holidays
+            if item.get("date")
+        }
+    except Exception as e:
+        print(f"공휴일 조회 실패: {e}")
+        return None
+
+def is_korean_public_holiday(target_date=None):
+    """지정 날짜가 한국 공휴일인지 확인합니다."""
+    date_obj = target_date or datetime.date.today()
+    holidays = get_korean_public_holidays(date_obj.year)
+
+    if holidays is None:
+        return None, None
+
+    date_key = date_obj.strftime("%Y-%m-%d")
+    if date_key in holidays:
+        return True, holidays[date_key]
+    return False, None
+
 def resolve_background_path(default_path, today=None):
     if today is None:
         today = datetime.datetime.today()
@@ -325,6 +357,16 @@ def main():
     build_dir = "build"
     if not os.path.exists(build_dir):
         os.makedirs(build_dir)
+
+    # 한국 공휴일은 업로드를 건너뜁니다.
+    fail_safe_skip = os.environ.get("HOLIDAY_FAIL_SAFE_SKIP", "true").lower() == "true"
+    is_holiday, holiday_name = is_korean_public_holiday(datetime.date.today())
+    if is_holiday is True:
+        print(f"📅 오늘은 한국 공휴일({holiday_name})입니다. 업로드를 건너뜁니다.")
+        return True
+    if is_holiday is None and fail_safe_skip:
+        print("⚠️ 공휴일 확인에 실패했습니다. 안전 모드로 업로드를 건너뜁니다.")
+        return True
     
     # .env에서 인스타그램 자격 증명을 불러옵니다.
     username = os.environ.get("IG_USERNAME")

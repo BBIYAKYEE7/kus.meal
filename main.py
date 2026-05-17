@@ -508,14 +508,10 @@ def run_main_with_retry():
 if __name__ == "__main__":
     import schedule  # pip install schedule 필요
 
-    # 프로그램 시작 시 1회 즉시 실행 (성공할 때까지 재시도 로직 포함)
-    run_main_with_retry()
-
-    # 이후부터는 기존 스케줄(크론 성격의 정시 실행)대로 동작
-    for day in ["monday", "tuesday", "wednesday", "thursday", "friday"]:
-        # 월요일만 07:00에 업로드하도록 설정하고, 나머지는 기존 시간(00:00)을 유지합니다.
-        at_time = "07:00" if day == "monday" else "00:00"
-        schedule.every().__getattribute__(day).at(at_time).do(run_main_with_retry)
+    # 월요일은 07:00, 나머지 평일(화~금)은 00:00에 업로드
+    schedule.every().monday.at("07:00").do(run_main_with_retry)
+    for day in ["tuesday", "wednesday", "thursday", "friday"]:
+        schedule.every().__getattribute__(day).at("00:00").do(run_main_with_retry)
     while True:
         schedule.run_pending()
         time.sleep(30)
